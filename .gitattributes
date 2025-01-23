@@ -1,2 +1,219 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+public class CalculatorApp extends JFrame implements ActionListener {
+    private JTextField display;
+    private StringBuilder currentInput;
+    private double result;
+    private char operator;
+    private boolean newCalculation;
+
+    public CalculatorApp() {
+        setTitle("Scientific Calculator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 550);
+
+        // Create the main panel with a modern dark background color
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(43, 43, 43));
+
+        // Display panel
+        display = new JTextField();
+        display.setEditable(false);
+        display.setHorizontalAlignment(JTextField.RIGHT);
+        display.setFont(new Font("Arial", Font.BOLD, 26));
+        display.setBackground(new Color(60, 63, 65));
+        display.setForeground(Color.WHITE);
+        display.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainPanel.add(display, BorderLayout.NORTH);
+
+        // Button panel for numbers and operators
+        JPanel buttonPanel = new JPanel(new GridLayout(6, 4, 10, 10));
+        buttonPanel.setBackground(new Color(43, 43, 43));
+
+        // Button labels for numbers, operators, and scientific functions
+        String[] buttonLabels = {
+            "7", "8", "9", "/",
+            "4", "5", "6", "*",
+            "1", "2", "3", "-",
+            "C", "0", ".", "+",
+            "sin", "cos", "tan", "√",
+            "log", "ln", "^", "="
+        };
+
+        currentInput = new StringBuilder();
+        result = 0.0;
+        operator = ' ';
+        newCalculation = true;
+
+        for (String label : buttonLabels) {
+            JButton button = createStyledButton(label);
+            buttonPanel.add(button);
+        }
+
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+        add(mainPanel);
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.addActionListener(this);
+        button.setFont(new Font("Arial", Font.BOLD, 18));
+
+        // Set different colors for numbers, operators, and scientific functions
+        if ("+-*/=".contains(text)) {
+            button.setBackground(new Color(98, 0, 238)); // Operator color
+            button.setForeground(Color.WHITE);
+        } else if ("Csin costan√log ln ^".contains(text)) {
+            button.setBackground(new Color(29, 161, 242)); // Scientific functions color
+            button.setForeground(Color.WHITE);
+        } else {
+            button.setBackground(new Color(60, 63, 65)); // Number color
+            button.setForeground(Color.WHITE);
+        }
+
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createLineBorder(new Color(43, 43, 43), 2));
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
+        return button;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+
+        if (command.equals("C")) {
+            currentInput.setLength(0);
+            result = 0.0;
+            operator = ' ';
+            newCalculation = true;
+            display.setText("");
+        } else if (command.equals("=")) {
+            performCalculation();
+        } else if (command.equals(".") && !currentInput.toString().contains(".")) {
+            currentInput.append(".");
+            display.setText(currentInput.toString());
+        } else if (command.matches("[0-9]")) {
+            if (newCalculation) {
+                currentInput.setLength(0);
+                newCalculation = false;
+            }
+            currentInput.append(command);
+            display.setText(currentInput.toString());
+        } else if ("+-*/".contains(command)) {
+            operator = command.charAt(0);
+            result = Double.parseDouble(currentInput.toString());
+            currentInput.setLength(0);
+            newCalculation = false;
+        } else {
+            performScientificOperation(command);
+        }
+    }
+
+    private void performCalculation() {
+        try {
+            double operand = Double.parseDouble(currentInput.toString());
+
+            switch (operator) {
+                case '+':
+                    result += operand;
+                    break;
+                case '-':
+                    result -= operand;
+                    break;
+                case '*':
+                    result *= operand;
+                    break;
+                case '/':
+                    if (Math.abs(operand) < 1e-6) {
+                        display.setText("Error: Division by zero");
+                        currentInput.setLength(0);
+                        return;
+                    }
+                    result /= operand;
+                    break;
+            }
+
+            operator = ' ';
+            currentInput.setLength(0);
+            currentInput.append(result);
+            display.setText(currentInput.toString());
+            newCalculation = true;
+        } catch (NumberFormatException ex) {
+            display.setText("Error: Invalid Input");
+            currentInput.setLength(0);
+        }
+    }
+
+    private void performScientificOperation(String command) {
+        try {
+            double value = Double.parseDouble(currentInput.toString());
+
+            switch (command) {
+                case "sin":
+                    result = Math.sin(Math.toRadians(value));
+                    break;
+                case "cos":
+                    result = Math.cos(Math.toRadians(value));
+                    break;
+                case "tan":
+                    result = Math.tan(Math.toRadians(value));
+                    break;
+                case "√":
+                    if (value < 0) {
+                        display.setText("Error: Negative Square Root");
+                        return;
+                    }
+                    result = Math.sqrt(value);
+                    break;
+                case "log":
+                    if (value <= 0) {
+                        display.setText("Error: Log of non-positive");
+                        return;
+                    }
+                    result = Math.log10(value);
+                    break;
+                case "ln":
+                    if (value <= 0) {
+                        display.setText("Error: ln of non-positive");
+                        return;
+                    }
+                    result = Math.log(value);
+                    break;
+                case "^":
+                    result = Math.pow(result, value); // Exponentiation
+                    break;
+                default:
+                    display.setText("Error: Unknown Operation");
+                    return;
+            }
+
+            currentInput.setLength(0);
+            display.setText(result == (int) result ? String.valueOf((int) result) : String.valueOf(result));
+            newCalculation = true;
+        } catch (NumberFormatException ex) {
+            display.setText("Error: Invalid Input");
+            currentInput.setLength(0);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            CalculatorApp calculator = new CalculatorApp();
+            calculator.setVisible(true);
+        });
+    }
+}
+
