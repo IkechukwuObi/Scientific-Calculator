@@ -48,10 +48,6 @@ This is a simple scientific calculator application built using Java. The applica
 4. View results instantly after pressing the "=" button.
 5. Use the "C" button to clear input or "AC" to reset the calculator.
 
-## Screenshots
-
-(Add screenshots or GIFs of the application in action here.)
-
 ## Future Improvements
 
 - Add support for additional scientific functions (e.g., factorial, permutations, combinations).
@@ -67,8 +63,8 @@ Contributions are welcome! Feel free to fork the repository, create a new branch
 For any questions or feedback, please reach out to me:
 
 - **Name**: Ikechukwu Martin Obi
-- **Email**: [ikechukwuobi@gmail.com](mailto\:ikechukwuobi@gmail.com)
-- **Phone**: [Insert your phone number here]
+- **Email**: ikeobi31@gmail.com
+- **Phone**: +27 79 299 5004
 
 ## License
 
